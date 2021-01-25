@@ -413,4 +413,22 @@ The conditional expressions used in `cond` and `if` can be compound conditions c
 #f
 > (not #f)
 #t
+> (define singleton-list?
+    (lambda (ls)
+      (and (pair? ls) (null? (cdr ls)))))
+> (singleton-list? '(1))
+#t
+> (singleton-list? '(1 2))
+#f
+```
+
+## Recursion
+```
+> (define last-item
+    (lambda (ls)
+      (cond
+        ((null? (cdr ls)) (car ls))
+        (else (last-item (cdr ls))))))
+> (last-item '(1 2 3))
+3
 ```
