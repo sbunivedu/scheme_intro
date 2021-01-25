@@ -398,3 +398,19 @@ pair
           (car item)
           (item))))
 ```
+
+The conditional expressions used in `cond` and `if` can be compound conditions connected by logical operators.
+```
+> (and #t #t)
+#t
+> (and #t #f)
+#f
+> (or #t #f)
+#t
+> (or #f #f)
+#f
+> (not #t)
+#f
+> (not #f)
+#t
+```
