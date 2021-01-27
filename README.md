@@ -387,6 +387,14 @@ number
 some-other-type
 > (type-of (cons 1 2))
 pair
+```
+
+A `cond` expression can be replaced by another special form with `if` keyword.
+The syntax is as follows: (if *condition* *consequent* *alternative*)
+
+Write a procedure that does the following: If its argument is a pair, return
+the `car` of the pair. Otherwise, return the argument.
+```
 > (define car-if-pair
     (lambda (item)
       (cond
@@ -413,6 +421,12 @@ The conditional expressions used in `cond` and `if` can be compound conditions c
 #f
 > (not #f)
 #t
+```
+
+Write a procedure to test whether a list contains precisely one item, i.e.
+*singleton* list. The empty list is not a pair. Thus the nonempty list whose
+`cdr` is empty must contain just one item and is thus a singleton list.
+```
 > (define singleton-list?
     (lambda (ls)
       (and (pair? ls) (null? (cdr ls)))))
@@ -423,6 +437,16 @@ The conditional expressions used in `cond` and `if` can be compound conditions c
 ```
 
 ## Recursion
+
+We can define procedures that use themselves as helping procedures.
+
+Write a procedure that, when applied to a nonemptylist, produces/returns
+the last top-level item in the list.
+* `(last-item '(1 2 3 4 5))` => 5
+* `(last-item '(a b (c d)))` => (c d)
+* `(last-item '(cat))` => cat
+* `(last-item '((cat)))` => (cat)
+
 ```
 > (define last-item
     (lambda (ls)
@@ -431,4 +455,90 @@ The conditional expressions used in `cond` and `if` can be compound conditions c
         (else (last-item (cdr ls))))))
 > (last-item '(1 2 3))
 3
+```
+
+To avoid testing the cases manually, we can use the "racketunit" testing
+framework to automatically run all the test cases when the code is run.
+```scheme
+#lang racket/base
+
+(require rackunit)
+
+(define last-item
+  (lambda (ls)
+    (cond
+      ((null? (cdr ls)) (car ls))
+      (else (last-item (cdr ls))))))
+
+(check-equal? (last-item '(1 2 3 4 5)) 5)
+(check-equal? (last-item '(a b (c d))) '(c d))
+(check-equal? (last-item '(cat)) 'cat)
+(check-equal? (last-item '((cat))) '(cat))
+```
+
+Define a procedure `member?` that decides for us whether its first argument
+is `equal?` to one of the _top-level_ items in the list that is the second
+argument.
+* `(member? 'cat '(dog hen cat pig))` => #t
+* `(member? 'fox '(dog hen cat pig))` => #f
+* `(member? 2 '(1 (2 3) 4))` => #f
+* `(member? '(2 3) '(1 (2 3) 4))` => #t
+* `(member? 'cat '())` => #f
+
+```scheme
+lang racket/base
+
+(require rackunit)
+
+(define member?
+    (lambda (item ls)
+      (cond
+        ((null? ls) #f)
+        ((equal? (car ls) item) #t)
+        (else (member? item (cdr ls))))))
+
+(check-equal? (member? 'cat '(dog hen cat pig)) #t)
+(check-equal? (member? 'fox '(dog hen cat pig)) #f)
+(check-equal? (member? 2 '(1 (2 3) 4)) #f)
+(check-equal? (member? '(2 3) '(1 (2 3) 4)) #t)
+(check-equal? (member? 'cat '()) #f)
+```
+
+Define a procedure `remove-1st` that removes the first top-level occurrence of
+a given item from a list of items.
+* `(remove-1st 'fox '(hen fox chick cock))` => (hen chick cock)
+* `(remove-1st 'fox '(hen fox chick fox cock))` => (hen chick fox cock)
+* `(remove-1st 'fox '(hen (fox chick) cock))` => (hen (fox chick) cock)
+* `(remove-1st 'fox '())` = > ()
+* `(remove-1st '(1 2) '(1 2 (1 2) ((1 2))))` => (1 2 ((1 2)))
+
+```scheme
+#lang racket/base
+
+(require rackunit)
+
+(define remove-1st
+    (lambda (item ls)
+      (cond
+        ((null? ls) '())
+        ((equal? (car ls) item) (cdr ls))
+        (else (cons
+               (car ls)
+               (remove-1st item (cdr ls)))))))
+
+(check-equal?
+ (remove-1st 'fox '(hen fox chick cock))
+ '(hen chick cock))
+(check-equal?
+ (remove-1st 'fox '(hen fox chick fox cock))
+ '(hen chick fox cock))
+(check-equal?
+ (remove-1st 'fox '(hen (fox chick) cock))
+ '(hen (fox chick) cock))
+(check-equal?
+ (remove-1st 'fox '())
+ '())
+(check-equal?
+ (remove-1st '(1 2) '(1 2 (1 2) ((1 2))))
+ '(1 2 ((1 2))))
 ```
