@@ -404,7 +404,13 @@ the `car` of the pair. Otherwise, return the argument.
     (lambda (item)
       (if (pair? item)
           (car item)
-          (item))))
+          item)))
+> (car-if-pair '(1 2 3))
+1
+> (car-if-pair 'abc)
+'abc
+> (car-if-pair '())
+'()
 ```
 
 The conditional expressions used in `cond` and `if` can be compound conditions connected by logical operators.
@@ -440,7 +446,7 @@ Write a procedure to test whether a list contains precisely one item, i.e.
 
 We can define procedures that use themselves as helping procedures.
 
-Write a procedure that, when applied to a nonemptylist, produces/returns
+Write a procedure that, when applied to a nonempty list, produces/returns
 the last top-level item in the list.
 * `(last-item '(1 2 3 4 5))` => 5
 * `(last-item '(a b (c d)))` => (c d)
@@ -479,14 +485,14 @@ framework to automatically run all the test cases when the code is run.
 Define a procedure `member?` that decides for us whether its first argument
 is `equal?` to one of the _top-level_ items in the list that is the second
 argument.
-* `(member? 'cat '(dog hen cat pig))` => #t
-* `(member? 'fox '(dog hen cat pig))` => #f
-* `(member? 2 '(1 (2 3) 4))` => #f
-* `(member? '(2 3) '(1 (2 3) 4))` => #t
-* `(member? 'cat '())` => #f
+* `(member? 'cat '(dog hen cat pig))` => `#t`
+* `(member? 'fox '(dog hen cat pig))` => `#f`
+* `(member? 2 '(1 (2 3) 4))` => `#f`
+* `(member? '(2 3) '(1 (2 3) 4))` => `#t`
+* `(member? 'cat '())` => `#f`
 
 ```scheme
-lang racket/base
+#lang racket/base
 
 (require rackunit)
 
@@ -506,11 +512,11 @@ lang racket/base
 
 Define a procedure `remove-1st` that removes the first top-level occurrence of
 a given item from a list of items.
-* `(remove-1st 'fox '(hen fox chick cock))` => (hen chick cock)
-* `(remove-1st 'fox '(hen fox chick fox cock))` => (hen chick fox cock)
-* `(remove-1st 'fox '(hen (fox chick) cock))` => (hen (fox chick) cock)
-* `(remove-1st 'fox '())` = > ()
-* `(remove-1st '(1 2) '(1 2 (1 2) ((1 2))))` => (1 2 ((1 2)))
+* `(remove-1st 'fox '(hen fox chick cock))` => `(hen chick cock)`
+* `(remove-1st 'fox '(hen fox chick fox cock))` => `(hen chick fox cock)`
+* `(remove-1st 'fox '(hen (fox chick) cock))` => `(hen (fox chick) cock)`
+* `(remove-1st 'fox '())` = > `()`
+* `(remove-1st '(1 2) '(1 2 (1 2) ((1 2))))` => `(1 2 ((1 2)))`
 
 ```scheme
 #lang racket/base
@@ -542,3 +548,122 @@ a given item from a list of items.
  (remove-1st '(1 2) '(1 2 (1 2) ((1 2))))
  '(1 2 ((1 2))))
 ```
+
+Define a procedure `swapper`, which takes three arguments: an item `x`, and
+item `y`, and a list `ls`. It builds a new list in which each top-level occurrence
+of `x` is replaced by `y` and each top-level occurence of `y` in `ls` is
+replaced by `x`.
+* (swapper 'cat 'dog '(my cat eats dog food)) => (my dog eats cat food)
+* (swapper 'john 'mary '(john loves mary)) => (mary loves john)
+* (swapper 'a 'n '(b n a n a n)) => (b a n a n a)
+* (swapper 'a 'b '(c (a b) d)) => (c (a b) d)
+* (swapper 'a 'b '()) => ()
+
+```scheme
+#lang eopl
+
+(require rackunit)
+
+(define swapper
+    (lambda (x y ls)
+      (cond
+        ((null? ls) '())
+        ((equal? (car ls) x)
+         (cons y (swapper x y (cdr ls))))
+        ((equal? (car ls) y)
+         (cons x (swapper x y (cdr ls))))
+        (else (cons
+               (car ls)
+               (swapper x y (cdr ls)))))))
+
+;; trace the evaluations of the swapper procedure
+(trace swapper)
+
+(check-equal?
+ (swapper 'cat 'dog '(my cat eats dog food))
+ '(my dog eats cat food))
+(check-equal?
+ (swapper 'john 'mary '(john loves mary))
+ '(mary loves john))
+(check-equal?
+ (swapper 'a 'n '(b n a n a n))
+ '(b a n a n a))
+(check-equal?
+ (swapper 'a 'b '(c (a b) d))
+ '(c (a b) d))
+(check-equal?
+ (swapper 'a 'b '())
+ '())
+```
+
+Write a procedure `length` that takes as its argument a list of items `ls`
+and then tells how many top-level items are in the list:
+* `(length '())` => 0
+* `(length '(one))` => 1
+* `(length '(a b c d e))` => 5
+* `(length '(1 (2 3) (4 5 6)))` => 3
+
+```
+#lang eopl
+
+(require rackunit)
+
+(define length
+  (lambda (ls)
+    (cond
+      ((null? ls) 0)
+      (else (+ 1 (length (cdr ls)))))))
+
+(check-equal? (length '()) 0)
+(check-equal? (length '(one)) 1)
+(check-equal? (length '(a b c d e)) 5)
+(check-equal? (length '(1 (2 3) (4 5 6))) 3)
+
+(trace length)
+```
+
+Define a procedure `sum` that finds the sum of items in a list:
+* `(sum '())` => 0
+* `(sum '(6))` => 6
+* `(sum '(1 2 3 4 5))` => 15
+
+```
+#lang eopl
+
+(require rackunit)
+
+(define sum
+  (lambda (ls)
+    (cond
+      ((null? ls) 0)
+      (else (+ (car ls) (sum (cdr ls)))))))
+
+(trace sum)
+
+(check-equal? (sum '()) 0)
+(check-equal? (sum '(6)) 6)
+(check-equal? (sum '(1 2 3 4 5)) 15)
+```
+
+Define a procedure `list-ref`, which takes as argument a list of items `ls` and
+a non-negative integer `n` and gives us the (n+1)th top-level item in `ls`:
+* `(list-ref '(a b c d e f) 3)` => d
+* `(list-ref '(a b c d e f) 0)` => a
+* `(list-ref '(a b c) 3) ` => list-ref: Index 3 out of range in list (a b c)
+* `(list-ref '((1 2) (3 4) (5 6)) 1)` => (3 4)
+* `(list-ref '() 0)` => list-ref: Index 0 out of range in list ()
+
+```
+#lang eopl
+
+(require rackunit)
+
+(eopl:error 'procedure_name "error message")
+
+
+```
+
+Define procedure `(duple n x)`, which returns a list containing `n`copies of `x`.
+* `(duple 2 3)` => (3 3)
+* `(duple 4 '(ho ho))` => ((ho ho) (ho ho) (ho ho) (ho ho))
+* `(duple 0 '(blah))` => ()
