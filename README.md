@@ -653,7 +653,7 @@ a non-negative integer `n` and gives us the (n+1)th top-level item in `ls`:
 * `(list-ref '((1 2) (3 4) (5 6)) 1)` => (3 4)
 * `(list-ref '() 0)` => list-ref: Index 0 out of range in list ()
 
-```
+```scheme
 #lang eopl
 
 (require rackunit)
@@ -667,3 +667,32 @@ Define procedure `(duple n x)`, which returns a list containing `n`copies of `x`
 * `(duple 2 3)` => (3 3)
 * `(duple 4 '(ho ho))` => ((ho ho) (ho ho) (ho ho) (ho ho))
 * `(duple 0 '(blah))` => ()
+
+```scheme
+```
+
+Write a function, `calculator`, which takes an infix arithmetic expression and evaluates it. For
+example,
+```
+> (calculator 42)
+42
+> (calculator ’(1 + 2))
+3
+> (calculator ’(1 + (2 * 8)))
+17
+> (calculator ’((((2 + 3) * 2) / 5) + (17 - 1))
+18
+```
+You may assume that all sub-expressions are parenthesized so that you don’t need to worry
+about precedence. Also, you need only implement the four basic arithmetic functions,
+
+```scheme
+#lang eopl
+
+(define calculator
+  (lambda (exp)
+    (cond
+      ((not (pair? exp)) exp)
+      ((eqv? (cadr exp) '+)
+       (+ (calculator (car exp)) (calculator (caddr exp)))))))
+```
